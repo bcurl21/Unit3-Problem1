@@ -1,55 +1,84 @@
+
     require([
-      "esri/Map",
-      "esri/layers/CSVLayer",
-      "esri/views/MapView",
-      "esri/config",
-      "esri/core/urlUtils",
+      "esri/WebScene",
+      "esri/views/SceneView",
+      "esri/Camera",
+      "esri/widgets/Home",
       "dojo/domReady!"
-    ], function(
-      Map,
-      CSVLayer,
-      MapView,
-      esriConfig,
-      urlUtils
-    ) {
+    ], function(WebScene, SceneView, Camera, Home) {
 
-     
-     var url = "https://raw.githubusercontent.com/gbrunner/Advanced_Python_for_GIS_and_RS/master/Week%202/stl_crime_wgs_84.csv";
-     esriConfig.request.corsEnabledServers.push('https://rawgit.com');
-
-     
-
-        const template = {
-          title: "Earthquake Info",
-          content: "Magnitude {mag} {type} hit {place} on {time}."
-        };
-
-        const csvLayer = new CSVLayer({
-          url: url,
-          copyright: "USGS Earthquakes",
-          popupTemplate: template
-        });
-
-        var symbol = {
-          type: "simple-marker", 
-          color:"green"
-        };
-
-      csvLayer.renderer = {
-        type: "simple", // autocasts as new SimpleRenderer()
-        symbol: symbol
-      };
-
-      var map = new Map({
-        basemap: "gray",
-        layers: [csvLayer]
+    
+      /*var map = new Map({
+        basemap: "streets",
+        ground: "world-elevation"
+      });*/
+      var scene = new WebScene({
+        portalItem:{
+         id:"8046207c1c214b5587230f5e5f8efc77" 
+        }
+      });
+      
+      var camera = new Camera({
+        position: [
+           -71.060217,
+          42.322655,
+          4000// elevation in meters
+        ],
+        tilt:45,
+        heading: 0
+      })
+      
+      var camera2 = new Camera({
+        position: {
+          x: 116.4074,
+          y: 39.9042,
+          z: 5000000
+        },
+        tilt: 0,
+        heading: 0
       });
 
-      var view = new MapView({
+      var view = new SceneView({
         container: "viewDiv",
-        center: [-90.2, 38.63],
-        zoom: 12,
-        map: map
+        map: scene,
+        viewingMode:"global",
+        camera: camera,
+        environment: {
+            lighting: {
+              date: new Date(),
+              directShadowsEnabled: true,
+              // don't update the view time when user pans.
+              // The clock widget drives the time
+              cameraTrackingEnabled: false
+            }
+        },
+    });
+    
+    /*var homeBtn = new Home({
+        view: view
+      });*/
+
+      // Add the home button to the top left corner of the view
+    view.ui.add(homeBtn, "top-left");
+    
+    [stl, bei].forEach(function(button) {
+      button.style.display = 'flex';
+      view.ui.add(button, 'top-right');
+    });
+    
+    bei.addEventListener('click', function() {
+      // reuse the default camera position already established in the homeBtn
+      view.goTo({
+        target:camera2
       });
+    });
+    
+    stl.addEventListener('click', function() {
+      // reuse the default camera position already established in the homeBtn
+      view.goTo({
+        target:camera
+      });
+    });
+
 
     });
